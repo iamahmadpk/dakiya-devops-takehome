@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: dakiya
+      POSTGRES_PASSWORD: dakiya_prod_2024!
+      POSTGRES_DB: dakiya
+    ports:
+      - "5432:5432"
+
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+
+  api:
+    build: ./api
+    env_file: .env
+    ports:
+      - "8080:8000"
+    depends_on:
+      - db
+      - redis
+
+  worker:
+    build: ./worker
+    env_file: .env
+    depends_on:
+      - db
