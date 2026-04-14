@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dakiya-redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dakiya-redis
+  template:
+    metadata:
+      labels:
+        app: dakiya-redis
+    spec:
+      containers:
+        - name: redis
+          image: {{ .Values.redis.image }}
+          ports:
+            - containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: dakiya-redis
+spec:
+  selector:
+    app: dakiya-redis
+  ports:
+    - port: 6379

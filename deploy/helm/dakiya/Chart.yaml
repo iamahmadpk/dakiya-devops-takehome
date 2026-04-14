@@ -1,0 +1,4 @@
+apiVersion: v2
+name: dakiya
+description: Dakiya parcel tracking (WIP - not tested)
+version: 0.1.0

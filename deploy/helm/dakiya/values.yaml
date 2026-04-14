@@ -1,0 +1,18 @@
+api:
+  image: dakiya/api
+  tag: latest
+  replicas: 2
+
+worker:
+  image: dakiya/worker
+  tag: latest
+  replicas: 3
+
+postgres:
+  image: postgres:latest
+  user: dakiya
+  password: dakiya_prod_2024!
+  database: dakiya
+
+redis:
+  image: redis:latest
