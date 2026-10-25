@@ -2,7 +2,7 @@ name: build-test-scan-publish-and-update-staging-gitops
 
 on:
   push:
-    branches: [ "assignment" ]
+    branches: [ "main" ]
 
 env:
   REGISTRY: ghcr.io
