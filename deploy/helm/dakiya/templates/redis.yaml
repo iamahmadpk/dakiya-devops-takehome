@@ -1,29 +1,72 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: dakiya-redis
+  name: {{ include "dakiya.fullname" . }}-redis
+  labels:
+    {{- include "dakiya.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
 spec:
+  serviceName: {{ include "dakiya.fullname" . }}-redis
   replicas: 1
   selector:
     matchLabels:
-      app: dakiya-redis
+      {{- include "dakiya.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: redis
   template:
     metadata:
       labels:
-        app: dakiya-redis
+        {{- include "dakiya.labels" . | nindent 8 }}
+        app.kubernetes.io/component: redis
     spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        fsGroup: 999
       containers:
         - name: redis
-          image: {{ .Values.redis.image }}
+          image: "{{ .Values.redis.image }}"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 6379
+              name: redis
+          livenessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "ping"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.redis.persistence.size }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: dakiya-redis
+  name: {{ include "dakiya.fullname" . }}-redis
+  labels:
+    {{- include "dakiya.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
 spec:
-  selector:
-    app: dakiya-redis
+  type: ClusterIP
   ports:
     - port: 6379
+      targetPort: 6379
+      protocol: TCP
+      name: redis
+  selector:
+    {{- include "dakiya.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
