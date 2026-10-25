@@ -1,7 +1,9 @@
 name: build-and-deploy
 
-on: [push]
-
+#on: [push]
+on:
+  workflow_dispatch:
+    
 jobs:
   build:
     runs-on: ubuntu-latest
