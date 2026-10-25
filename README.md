@@ -2,7 +2,8 @@
 
 Dakiya is a parcel-tracking service consisting of a FastAPI API, a background worker, Redis for queued scan events, and PostgreSQL for persistent tracking data. This repository contains Docker Compose, a reusable Helm chart, GitHub Actions CI, and Argo CD Applications for staging, production, and a retail-partner environment.
 
-> **Submission note:** Replace the evidence placeholders and time-spent estimates below with real values before submitting. Do not link to a pipeline, pull request, screenshot, or recording unless it exists and is accessible to the reviewer.
+> **Evidence:** The [`evidence/`](evidence/) directory contains screenshots documenting the completed work, including the successful CI workflow, API access, Kubernetes workloads and storage, and Argo CD applications/resource views. The screenshots support the claims in this README; they do not replace live CI or pull-request links.
+
 
 ## Findings and remediation
 
@@ -11,6 +12,9 @@ This table compares the initial repository supplied for the assignment with the 
 | Finding in initial repository | Risk | Change made | Status / evidence |
 |---|---|---|---|
 | CI used `pytest || true`. | Tests could fail while the pipeline continued to build and publish images. | CI runs the API pytest suite in a separate required job; image build/scan/push depends on it. | **Implemented in workflow.** Add a link to a successful CI run below to prove it ran successfully. |
+| The test for rejecting an unknown scan status failed because the API schema accepted arbitrary strings. | Invalid scan statuses could be accepted instead of rejected at request validation. | Constrained `ScanEvent.status` to the supported status values using a `Literal` type so invalid values return HTTP 422; updated the test expectation accordingly. | **Code/test fix made.** Confirmed by the successful CI screenshot; include the live run URL below. |
+| A local `.env` file containing environment configuration was pushed to the repository. | Environment values, potentially including credentials, could be exposed in source control. | Removed the `.env` file from the tracked working tree and updated `.gitignore` to exclude `.env` and common Python virtual-environment/cache files. | **Repository hygiene improved.** If the file contained a real secret, rotate it; adding `.env` to `.gitignore` does not erase it from Git history. |
+| The API did not expose dedicated health/readiness endpoints. | Operators and orchestrators had no simple HTTP checks for API liveness/readiness. | Added `/health` and `/readiness` endpoints to the API application. | **Implemented.** Verify both endpoints against the running application before claiming runtime validation. |
 | CI ran on every push, used floating action references, pushed `latest` images, and directly SSH-deployed to production. | Unreviewed changes could reach production; mutable tags obscure exactly what was deployed; SSH key handling and disabled host-key checking weaken deployment security. | The updated workflow is triggered on pushes to `assignment`, uses SHA tags, publishes to GHCR, and updates staging desired image tags in Git. It does not directly apply Kubernetes resources or SSH to production. | **Workflow changed.** Production/partner promotion is intended to happen through Git changes; repository branch protection and required approvals must be configured and verified separately. |
 | API Dockerfile used `python:latest`, passed `DB_PASSWORD` as a build argument, and enabled Uvicorn reload. | Floating base image, possible secret exposure in build metadata/history, and development-mode behavior in a deployment image. | API image uses Python 3.11 slim, a multi-stage build, a non-root user, and runtime configuration for credentials. | **Implemented in Dockerfile.** No independent image security audit is claimed. |
 | Worker Dockerfile used `python:latest` and installed extra tools (`vim`, `curl`) into the runtime image. | Less reproducible builds and a larger attack surface. | Worker image uses Python 3.11 slim, a multi-stage build, and a non-root user. | **Implemented in Dockerfile.** |
@@ -25,13 +29,14 @@ This table compares the initial repository supplied for the assignment with the 
 
 Run these commands from the repository root (`dakiya/`). Ensure Docker Engine and the Docker Compose plugin are installed.
 
-1. Create a local `.env` file. Do not commit it; use a local-only password:
+1. Create your local environment file from the example, then edit `.env` and replace the example values with the appropriate values for your environment. Do not commit `.env`.
 
-   ```dotenv
-   DB_USER=dakiya
-   DB_PASSWORD=replace-with-a-local-password
-   DB_NAME=dakiya
+   ```bash
+   cp .env.example .env
+   nano .env
    ```
+
+   Update the values in `.env` as needed, including `DB_USER`, `DB_PASSWORD`, and `DB_NAME`. Use a strong local password and keep real credentials out of source control.
 
 2. Build and start the stack:
 
@@ -46,10 +51,12 @@ Run these commands from the repository root (`dakiya/`). Ensure Docker Engine an
    docker compose logs --tail=100 api worker postgres redis
    ```
 
-4. Check the API root endpoint:
+4. Check the API root, health, and readiness endpoints:
 
    ```bash
    curl -i http://localhost:8000/
+   curl -i http://localhost:8000/health
+   curl -i http://localhost:8000/readiness
    ```
 
 5. Stop the services while retaining named volumes:
@@ -173,29 +180,28 @@ Observed kind-cluster state at the time of inspection:
 
 Update this disclosure to match your actual usage before submitting. Based on the work session, an honest draft is:
 
-- **ChatGPT:** Used to help reason through Docker/Compose configuration, Helm chart structure, Argo CD GitOps flow, CI design, troubleshooting, and documentation wording.
+- **Gemini:** For initial plan, updated the configuraitons even tried for HELM but its making stuff complex.
+
+- **ChatGPT:** Used to help reason through Helm chart structure, Argo CD GitOps flow, CI design, troubleshooting, and documentation wording.
 - **Human verification:** Commands and outputs from the local kind cluster were reviewed to distinguish observed results from assumptions.
 - **Incorrect AI suggestion encountered:** An earlier suggestion treated the worker's Redis socket timeout mainly as an uncaught blocking-read timeout and proposed a sample loop. That sample was not verified against the full worker logic and should not be represented as a tested fix. The worker timeout remains open until the existing job-processing code is changed and retested.
-- **Other tools:** Add any other AI tools actually used; do not list tools that were not used.
+Also Gemini was writing credentials hardcoded to the HELM and ArgoCD.
+
 
 ## Time spent
 
 Enter your actual time, rounded reasonably. Do not use invented estimates:
 
 | Task | Actual time |
-|---|---:|
-| Task 1 — Docker/Compose and container hardening | `TODO: ___ hours` |
-| Task 2 — CI tests, image build/scan/publish | `TODO: ___ hours` |
-| Task 3 — Helm chart and kind validation | `TODO: ___ hours` |
-| Task 4 — Argo CD GitOps and environment configuration | `TODO: ___ hours` |
-| Task 5 — design, README, implementation notes, and verification | `TODO: ___ hours` |
-| **Total** | **TODO: ___ hours** |
+|---|---:| Started at 6PM
+| Task 1 — Docker/Compose and container hardening | `Completed: 1 hours` |
+| Task 2 — CI tests, image build/scan/publish | `TODO: 1 hours` |
+| Task 3 — Helm chart and kind validation | `TODO: 3 hours` |
+| Task 4 — Argo CD GitOps and environment configuration | `TODO: 2 hours` |
+| Task 5 — design, README, implementation notes, and verification | `TODO: 1 hours` |
+| **Total** | **Completed: 9 hours** |
 
 ## Remaining limitations
 
 - Fix and verify worker Redis timeout handling without discarding its existing scan-processing logic.
-- Verify an actual scan flows through API → Redis → worker → PostgreSQL.
-- Configure and verify repository branch protection/review requirements for production and partner promotion.
 - Decide on a blocking vulnerability policy for Trivy.
-- Verify private Git/GHCR credentials in a clean cluster if private packages/repository access is part of the submission.
-- Add real CI, PR, and service evidence links before submission.
