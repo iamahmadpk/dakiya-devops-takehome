@@ -1,6 +1,8 @@
 name: build-and-deploy
 
-on: [assignment]
+on:
+  push:
+    branches: [ "assignment" ]
     
 jobs:
   test:
