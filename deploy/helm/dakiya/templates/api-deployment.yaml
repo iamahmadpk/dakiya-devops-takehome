@@ -18,6 +18,10 @@ spec:
         {{- include "dakiya.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: api
     spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       securityContext:
         runAsNonRoot: true
         runAsUser: 10001

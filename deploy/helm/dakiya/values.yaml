@@ -2,6 +2,7 @@ replicaCount: 2
 
 image:
   pullPolicy: IfNotPresent
+  pullSecrets: [] # optional list, e.g. [{name: ghcr-pull-secret}] for private GHCR packages
   api:
     repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-api
     tag: "latest"

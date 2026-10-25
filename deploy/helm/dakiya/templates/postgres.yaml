@@ -31,17 +31,17 @@ spec:
             - name: POSTGRES_USER
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "dakiya.fullname" . }}-secret
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
                   key: POSTGRES_USER
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "dakiya.fullname" . }}-secret
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
-                  name: {{ include "dakiya.fullname" . }}-secret
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
                   key: POSTGRES_DB
           livenessProbe:
             exec:
