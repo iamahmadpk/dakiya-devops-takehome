@@ -55,8 +55,6 @@ Run these commands from the repository root (`dakiya/`). Ensure Docker Engine an
 
    ```bash
    curl -i http://localhost:8000/
-   curl -i http://localhost:8000/health
-   curl -i http://localhost:8000/readiness
    ```
 
 5. Stop the services while retaining named volumes:
@@ -81,6 +79,29 @@ helm template dakiya-release ./deploy/helm/dakiya \
 ```
 
 Before installing, create or configure the Kubernetes Secret expected by the selected values and ensure the image tags are pullable by the cluster. Then run:
+
+```bash
+umask 077
+
+cat > /tmp/dakiya-db.env <<'EOF'
+POSTGRES_USER=dakiya
+POSTGRES_DB=dakiya
+POSTGRES_PASSWORD=REPLACE_WITH_YOUR_LOCAL_TEST_PASSWORD
+EOF
+
+```
+```bash
+kubectl create secret generic dakiya-release-secret \
+  -n dakiya-staging \
+  --from-env-file=/tmp/dakiya-db.env \
+  --dry-run=client -o yaml | kubectl apply -f -
+```
+
+```bash
+chmod +x scripts/test-helm-kind.sh
+./scripts/test-helm-kind.sh
+```
+OR (Following not tested)
 
 ```bash
 helm upgrade --install dakiya-release ./deploy/helm/dakiya \
