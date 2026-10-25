@@ -1,0 +1,18 @@
+# Partner deployment is isolated by namespace and uses its own credentials and PVCs.
+# Pin image tags to the partner-approved SHA through a reviewed PR; never use latest for steady state.
+replicaCount: 1
+image:
+  pullPolicy: IfNotPresent
+  api:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-api
+    tag: "latest" # bootstrap only; pin to an explicitly approved SHA before partner handoff
+  worker:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-worker
+    tag: "latest" # bootstrap only; pin to an explicitly approved SHA before partner handoff
+postgresql:
+  existingSecret: dakiya-db-secret
+  persistence:
+    size: 1Gi
+redis:
+  persistence:
+    size: 1Gi

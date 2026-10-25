@@ -1,0 +1,17 @@
+# Promotion target: change image tags to a tested staging SHA through a reviewed PR.
+replicaCount: 2
+image:
+  pullPolicy: IfNotPresent
+  api:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-api
+    tag: "latest" # bootstrap only; pin to the approved staging SHA before production promotion
+  worker:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-worker
+    tag: "latest" # bootstrap only; pin to the approved staging SHA before production promotion
+postgresql:
+  existingSecret: dakiya-db-secret
+  persistence:
+    size: 2Gi
+redis:
+  persistence:
+    size: 1Gi

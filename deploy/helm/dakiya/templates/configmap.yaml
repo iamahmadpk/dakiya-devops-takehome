@@ -1,11 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: dakiya-config
+  name: {{ include "dakiya.fullname" . }}-config
+  labels:
+    {{- include "dakiya.labels" . | nindent 4 }}
 data:
-  DB_HOST: dakiya-postgres
-  DB_PORT: "5432"
-  DB_NAME: {{ .Values.postgres.database | quote }}
-  DB_USER: {{ .Values.postgres.user | quote }}
-  DB_PASSWORD: {{ .Values.postgres.password | quote }}
-  REDIS_HOST: dakiya-redis
+  DATABASE_URL: "postgresql://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@{{ include "dakiya.fullname" . }}-postgres:5432/{{ .Values.postgresql.database }}"
+  REDIS_URL: "redis://{{ include "dakiya.fullname" . }}-redis:6379/0"

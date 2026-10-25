@@ -7,6 +7,7 @@ from datetime import datetime
 import redis
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
+from typing import Literal
 
 from . import config, db
 
@@ -28,12 +29,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Dakiya Tracking API", lifespan=lifespan)
 
-
 class ScanEvent(BaseModel):
     tracking_id: str
-    status: str  # booked, in_transit, out_for_delivery, delivered, returned
+    status: Literal[
+        "booked",
+        "in_transit",
+        "out_for_delivery",
+        "delivered",
+        "returned",
+    ]
     depot: str
     scanned_at: datetime
+
+# class ScanEvent(BaseModel):
+#     tracking_id: str
+#     status: str  # booked, in_transit, out_for_delivery, delivered, returned
+#     depot: str
+#     scanned_at: datetime
 
 
 def get_redis():
@@ -79,3 +91,12 @@ def get_parcel(tracking_id: str, conn=Depends(get_db)):
         "updated_at": parcel[2],
         "history": [{"status": h[0], "depot": h[1], "scanned_at": h[2]} for h in history],
     }
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+@app.get("/readiness")
+def readiness_check():
+    # Verify DB & Redis connection logic here
+    return {"status": "ready"}

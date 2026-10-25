@@ -1,0 +1,16 @@
+# Restricting accidental upload of env variables/secrets, dependencies etc 
+.env
+.env.*
+
+!.env.example
+
+__pycache__/
+*.py[cod]
+*.pyo
+
+.vscode/
+.idea/
+
+.venv/
+.pytest_cache/
+

@@ -1,18 +1,62 @@
+replicaCount: 2
+
+image:
+  pullPolicy: IfNotPresent
+  pullSecrets: [] # optional list, e.g. [{name: ghcr-pull-secret}] for private GHCR packages
+  api:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-api
+    tag: "latest"
+  worker:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-worker
+    tag: "latest"
+
 api:
-  image: dakiya/api
-  tag: latest
-  replicas: 2
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 worker:
-  image: dakiya/worker
-  tag: latest
-  replicas: 3
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
 
-postgres:
-  image: postgres:latest
+postgresql:
+  image: postgres:15-alpine
   user: dakiya
-  password: dakiya_prod_2024!
+  password: ""
+  existingSecret: ""
   database: dakiya
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 redis:
-  image: redis:latest
+  image: redis:7-alpine
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL

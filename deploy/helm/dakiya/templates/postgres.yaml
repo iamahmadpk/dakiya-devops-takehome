@@ -1,42 +1,94 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
-  name: dakiya-postgres
+  name: {{ include "dakiya.fullname" . }}-postgres
+  labels:
+    {{- include "dakiya.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
+
 spec:
+  serviceName: {{ include "dakiya.fullname" . }}-postgres
   replicas: 1
   selector:
     matchLabels:
-      app: dakiya-postgres
+      {{- include "dakiya.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: postgresql
   template:
     metadata:
       labels:
-        app: dakiya-postgres
+        {{- include "dakiya.labels" . | nindent 8 }}
+        app.kubernetes.io/component: postgresql
     spec:
+      # REMOVE or comment out securityContext here if it forces runAsNonRoot/runAsUser for postgres
       containers:
         - name: postgres
-          image: {{ .Values.postgres.image }}
-          env:
-            - name: POSTGRES_USER
-              value: {{ .Values.postgres.user | quote }}
-            - name: POSTGRES_PASSWORD
-              value: {{ .Values.postgres.password | quote }}
-            - name: POSTGRES_DB
-              value: {{ .Values.postgres.database | quote }}
+          image: "{{ .Values.postgresql.image }}"
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 5432
+              name: postgres
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
+                  key: POSTGRES_USER
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
+                  key: POSTGRES_PASSWORD
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
+                  key: POSTGRES_DB
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+          readinessProbe:
+            exec:
+              command:
+                - sh
+                - -ec
+                - exec pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 5
+          resources:
+            {{- toYaml .Values.postgresql.resources | nindent 12 }}
           volumeMounts:
-            - name: data
+            - name: postgres-data
               mountPath: /var/lib/postgresql/data
-      volumes:
-        - name: data
-          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.postgresql.persistence.size }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: dakiya-postgres
+  name: {{ include "dakiya.fullname" . }}-postgres
+  labels:
+    {{- include "dakiya.labels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql
 spec:
-  selector:
-    app: dakiya-postgres
+  type: ClusterIP
   ports:
     - port: 5432
+      targetPort: 5432
+      protocol: TCP
+      name: postgres
+  selector:
+    {{- include "dakiya.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: postgresql

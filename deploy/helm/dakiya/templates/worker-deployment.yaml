@@ -1,20 +1,62 @@
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: dakiya-worker
+  name: {{ include "dakiya.fullname" . }}-worker
+  labels:
+    {{- include "dakiya.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
 spec:
-  replicas: {{ .Values.worker.replicas }}
+  replicas: 1
   selector:
     matchLabels:
-      app: dakiya-worker
+      {{- include "dakiya.selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: worker
   template:
     metadata:
       labels:
-        app: dakiya-worker
+        {{- include "dakiya.selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: worker
     spec:
+      {{- with .Values.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10001
       containers:
         - name: worker
-          image: "{{ .Values.worker.image }}:{{ .Values.worker.tag }}"
-          envFrom:
-            - configMapRef:
-                name: dakiya-config
+          image: "{{ .Values.image.worker.repository }}:{{ .Values.image.worker.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: DB_HOST
+              value: "{{ include "dakiya.fullname" . }}-postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
+                  key: POSTGRES_DB
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
+                  key: POSTGRES_USER
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.existingSecret | default (printf "%s-secret" (include "dakiya.fullname" .)) }}
+                  key: POSTGRES_PASSWORD
+            - name: REDIS_HOST
+              value: "{{ include "dakiya.fullname" . }}-redis"
+            - name: REDIS_PORT
+              value: "6379"
+          resources:
+            {{- toYaml .Values.worker.resources | nindent 12 }}
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL

@@ -1,0 +1,17 @@
+# Argo CD staging environment. The CI workflow updates these tags to an immutable commit SHA.
+replicaCount: 1
+image:
+  pullPolicy: IfNotPresent
+  api:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-api
+    tag: "c65d2625f4e697cd516096bb6965776811fb565d" # bootstrap value; replaced with a SHA by CI after a successful build
+  worker:
+    repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-worker
+    tag: "c65d2625f4e697cd516096bb6965776811fb565d" # bootstrap value; replaced with a SHA by CI after a successful build
+postgresql:
+  existingSecret: dakiya-release-secret
+  persistence:
+    size: 1Gi
+redis:
+  persistence:
+    size: 1Gi
