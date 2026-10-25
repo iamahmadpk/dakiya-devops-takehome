@@ -91,3 +91,12 @@ def get_parcel(tracking_id: str, conn=Depends(get_db)):
         "updated_at": parcel[2],
         "history": [{"status": h[0], "depot": h[1], "scanned_at": h[2]} for h in history],
     }
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
+@app.get("/readiness")
+def readiness_check():
+    # Verify DB & Redis connection logic here
+    return {"status": "ready"}
