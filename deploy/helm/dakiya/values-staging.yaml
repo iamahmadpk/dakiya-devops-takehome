@@ -4,10 +4,10 @@ image:
   pullPolicy: IfNotPresent
   api:
     repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-api
-    tag: "latest" # bootstrap value; replaced with a SHA by CI after a successful build
+    tag: "4fbe84a570256adbecdce097c5d385cf1760808e" # bootstrap value; replaced with a SHA by CI after a successful build
   worker:
     repository: ghcr.io/iamahmadpk/dakiya-devops-takehome-worker
-    tag: "latest" # bootstrap value; replaced with a SHA by CI after a successful build
+    tag: "4fbe84a570256adbecdce097c5d385cf1760808e" # bootstrap value; replaced with a SHA by CI after a successful build
 postgresql:
   existingSecret: dakiya-release-secret
   persistence:
