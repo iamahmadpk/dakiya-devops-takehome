@@ -88,7 +88,7 @@ jobs:
           cache-to: type=gha,mode=max
       
       - name: Run Trivy Vulnerability Scanner (API)
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_API }}:${{ github.sha }}'
           format: 'table'
@@ -96,7 +96,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
       - name: Run Trivy Vulnerability Scanner (Worker)
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: '${{ env.REGISTRY }}/${{ env.IMAGE_NAME_WORKER  }}:${{ github.sha }}'
           format: 'table'
