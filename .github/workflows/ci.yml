@@ -6,6 +6,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
+  IMAGE_PREFIX: iamahmadpk/dakiya-devops-takehome
   IMAGE_NAME_API: ${{ github.repository }}-api
   IMAGE_NAME_WORKER: ${{ github.repository }}-worker
     
