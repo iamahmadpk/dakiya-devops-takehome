@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dakiya-staging
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/iamahmadpk/dakiya-devops-takehome.git
+    targetRevision: assignment
+    path: deploy/helm/dakiya
+    helm:
+      releaseName: dakiya-release
+      valueFiles:
+        - values.yaml
+        - values-staging.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dakiya-staging
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PruneLast=true
