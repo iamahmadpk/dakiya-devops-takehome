@@ -40,6 +40,10 @@ jobs:
     name: Build, Push
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
 
     steps:
       - name: Checkout Code
@@ -53,6 +57,7 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+    
       - name: Extract Metadata (Tags)
         id: meta
         uses: docker/metadata-action@v5
@@ -63,6 +68,7 @@ jobs:
           tags: |
             type=sha,format=long
             type=semver,pattern={{version}}
+     
       - name: Build and Push API Image
         uses: docker/build-push-action@v5
         with:
