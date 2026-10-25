@@ -214,13 +214,13 @@ Also Gemini was writing credentials hardcoded to the HELM and ArgoCD.
 Enter your actual time, rounded reasonably. Do not use invented estimates:
 
 | Task | Actual time |
-|---|---:| Started at 6PM
+|---|---:|
 | Task 1 — Docker/Compose and container hardening | `Completed: 1 hours` |
 | Task 2 — CI tests, image build/scan/publish | `TODO: 1 hours` |
 | Task 3 — Helm chart and kind validation | `TODO: 3 hours` |
 | Task 4 — Argo CD GitOps and environment configuration | `TODO: 2 hours` |
 | Task 5 — design, README, implementation notes, and verification | `TODO: 1 hours` |
-| **Total** | **Completed: 9 hours** |
+| **Total** | **Completed: 8 hours** |
 
 ## Remaining limitations
 
