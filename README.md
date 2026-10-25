@@ -199,7 +199,6 @@ Observed kind-cluster state at the time of inspection:
 
 ## AI usage
 
-Update this disclosure to match your actual usage before submitting. Based on the work session, an honest draft is:
 
 - **Gemini:** For initial plan, updated the configuraitons even tried for HELM but its making stuff complex.
 
@@ -210,8 +209,6 @@ Also Gemini was writing credentials hardcoded to the HELM and ArgoCD.
 
 
 ## Time spent
-
-Enter your actual time, rounded reasonably. Do not use invented estimates:
 
 | Task | Actual time |
 |---|---:|
